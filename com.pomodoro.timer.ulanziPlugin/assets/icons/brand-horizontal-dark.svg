@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" fill="none">
+  <defs>
+    <linearGradient id="hsil" gradientUnits="userSpaceOnUse" x1="30" y1="20" x2="190" y2="210">
+      <stop offset="0"   stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#c3c8d0"/>
+      <stop offset="1"   stop-color="#eef1f5"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(22,12) scale(0.76)">
+    <rect x="115" y="14" width="26" height="20" rx="7" fill="url(#hsil)"/>
+    <rect x="123" y="30" width="10" height="14" rx="3" fill="url(#hsil)"/>
+    <circle cx="128" cy="142" r="88" fill="none" stroke="url(#hsil)" stroke-width="20"
+      stroke-linecap="round" stroke-dasharray="430 123" transform="rotate(-108 128 142)"/>
+    <line x1="128" y1="142" x2="128" y2="88"  stroke="url(#hsil)" stroke-width="17" stroke-linecap="round"/>
+    <line x1="128" y1="142" x2="178" y2="142" stroke="url(#hsil)" stroke-width="17" stroke-linecap="round"/>
+    <circle cx="128" cy="142" r="13" fill="url(#hsil)"/>
+  </g>
+
+  <text x="232" y="118" font-family="'Segoe UI',Arial,Helvetica,sans-serif" font-size="64" font-weight="800" letter-spacing="-1.5" fill="#ffffff">Pomodoro</text>
+  <text x="234" y="178" font-family="'Segoe UI',Arial,Helvetica,sans-serif" font-size="40" font-weight="700" letter-spacing="6" fill="#E74C3C">TIMER</text>
+</svg>

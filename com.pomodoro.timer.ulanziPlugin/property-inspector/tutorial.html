@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pomodoro</title>
+<link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/icons/favicon.png">
+<style>
+  :root{
+    --green:#E74C3C; --red:#E74C3C; --blue:#2980B9;  /* brand accent = Classic theme red */
+    --bg:#0a0b0d; --bg2:#0e1014; --card:#13151a; --line:#21242c;
+    --tx:#eef1f5; --mut:#8b929c;
+    --r:16px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--tx);
+    font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(700px 400px at 12% -8%, rgba(231,76,60,.12), transparent 60%),
+      radial-gradient(700px 400px at 95% 0%, rgba(41,128,185,.08), transparent 60%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:56px 22px 64px;}
+
+  /* hero */
+  .hero{display:flex; align-items:center; gap:20px; margin-bottom:14px;
+    opacity:0; transform:translateY(12px); animation:rise .7s ease forwards;}
+  .badge{width:72px;height:72px;flex:0 0 72px;border-radius:20px;background:#121317;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.5), inset 0 0 0 1px var(--line);}
+  .badge svg .ring{stroke-dasharray:480 122; animation:spin 6s linear infinite; transform-origin:128px 128px;}
+  h1{font-size:clamp(28px,6vw,40px); line-height:1.08; margin:0; font-weight:800; letter-spacing:-.02em;}
+  h1 .g{background:linear-gradient(90deg,var(--green),#ff8a7a); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .sub{color:var(--mut); margin:6px 0 0; font-size:15px;}
+
+  .lead{font-size:17px; color:#cdd3da; margin:18px 0 34px; max-width:64ch;
+    opacity:0; animation:rise .7s .08s ease forwards;}
+
+  /* sections */
+  .sec{margin:30px 0;}
+  .kicker{display:inline-block; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--green); font-weight:700; margin-bottom:10px;}
+  h2{font-size:22px; margin:0 0 14px; font-weight:800; letter-spacing:-.01em;}
+
+  .card{background:linear-gradient(180deg,var(--card),#101217); border:1px solid var(--line);
+    border-radius:var(--r); padding:20px 22px;}
+  .card + .card{margin-top:14px;}
+
+  ol.steps{counter-reset:s; list-style:none; margin:0; padding:0;}
+  ol.steps li{position:relative; padding:12px 0 12px 52px; border-bottom:1px solid var(--line);}
+  ol.steps li:last-child{border-bottom:0;}
+  ol.steps li::before{counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:10px; width:34px; height:34px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+    color:#fff; background:linear-gradient(135deg,var(--green),#c0392b);}
+
+  ul.list{list-style:none; margin:0; padding:0;}
+  ul.list li{position:relative; padding:9px 0 9px 26px; color:#d7dce2;}
+  ul.list li::before{content:""; position:absolute; left:4px; top:16px; width:8px; height:8px;
+    border-radius:50%; background:var(--green); box-shadow:0 0 10px rgba(231,76,60,.6);}
+
+  /* color guide */
+  .colors{display:grid; gap:10px;}
+  .crow{display:flex; align-items:center; gap:14px; padding:10px 12px; border-radius:12px;
+    background:#0f1115; border:1px solid var(--line);}
+  .sw{width:30px;height:30px;flex:0 0 30px;border-radius:9px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
+  .sw.alert{animation:blink 1s steps(1) infinite;}
+  .cname{font-weight:700;}
+  .cdesc{color:var(--mut); font-size:13.5px;}
+  .note{color:var(--mut); font-size:12.5px; margin-top:10px;}
+
+  /* credits */
+  .credits{margin-top:40px; text-align:center;
+    background:linear-gradient(180deg,#10141a,#0d0f13); border:1px solid var(--line);
+    border-radius:20px; padding:30px 22px;}
+  .avatar{width:84px;height:84px;border-radius:50%;margin:0 auto 12px; overflow:hidden;
+    display:flex;align-items:center;justify-content:center; font-weight:800; font-size:28px; color:#fff;
+    background:linear-gradient(135deg,var(--green),#c0392b);
+    box-shadow:0 8px 24px rgba(231,76,60,.35), 0 0 0 3px rgba(231,76,60,.25);}
+  .avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .cby{color:var(--mut); font-size:13px;}
+  .cname2{font-size:22px; font-weight:800; margin:2px 0 16px;}
+  .social{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .social a{display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    color:var(--tx); background:#15181e; border:1px solid var(--line); border-radius:12px;
+    padding:10px 16px; font-weight:600; font-size:14px; transition:all .15s;}
+  .social a:hover{border-color:var(--green); color:var(--green); transform:translateY(-2px);}
+  .social svg{width:18px;height:18px; fill:currentColor;}
+
+  .foot{color:#5b626c; font-size:12px; text-align:center; margin-top:26px;}
+
+  @keyframes rise{to{opacity:1; transform:none;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes blink{0%,49%{background:var(--red);}50%,100%{background:#3a1f1c;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="badge">
+      <svg width="48" height="48" viewBox="0 0 256 256">
+        <circle cx="128" cy="128" r="96" fill="none" stroke="#23262e" stroke-width="16"/>
+        <circle class="ring" cx="128" cy="128" r="96" fill="none" stroke="#E74C3C" stroke-width="16" stroke-linecap="round"/>
+        <text x="128" y="150" text-anchor="middle" fill="#E74C3C" font-size="78" font-weight="800" font-family="Arial,sans-serif">25</text>
+      </svg>
+    </div>
+    <div>
+      <h1 id="title">The <span class="g">Pomodoro</span> Technique</h1>
+      <div class="sub" id="sub">Focus timer for your Ulanzi Deck</div>
+    </div>
+  </div>
+
+  <p class="lead" id="p_what"></p>
+
+  <div class="sec">
+    <span class="kicker" id="k_how">Method</span>
+    <h2 id="h_how">How it works</h2>
+    <div class="card"><ol class="steps" id="l_how"></ol></div>
+  </div>
+
+  <div class="sec">
+    <span class="kicker" id="k_colors">Reference</span>
+    <h2 id="h_colors">Color guide</h2>
+    <div class="card">
+      <div class="colors" id="l_colors"></div>
+      <div class="note" id="colors_note"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <span class="kicker" id="k_use">On the key</span>
+    <h2 id="h_use">Using this plugin</h2>
+    <div class="card"><ul class="list" id="l_use"></ul></div>
+  </div>
+
+  <div class="sec">
+    <span class="kicker" id="k_tips">Get the most</span>
+    <h2 id="h_tips">Tips</h2>
+    <div class="card"><ul class="list" id="l_tips"></ul></div>
+  </div>
+
+  <div class="credits">
+    <div class="avatar"><img src="../assets/author.jpg" alt="Jean Almeida"
+      onerror="this.remove(); this.parentNode.textContent='JA';"></div>
+    <div class="cby" id="c_by">Developed by</div>
+    <div class="cname2">Jean Almeida</div>
+    <div class="social">
+      <a href="https://www.linkedin.com/in/jeanc-almeida/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        <span>LinkedIn</span>
+      </a>
+      <a href="https://github.com/JEAN-ALMEIDA-CZO" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a href="https://portifolio.athos.app.br/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 6h-2.8a15.7 15.7 0 0 0-1.3-3.6A8 8 0 0 1 18.9 8zM12 4c.8 1.1 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.9 1.9-4zM4.3 14a8 8 0 0 1 0-4h3.2a16.8 16.8 0 0 0 0 4H4.3zm.8 2h2.8c.3 1.3.8 2.5 1.3 3.6A8 8 0 0 1 5.1 16zm2.8-8H5.1a8 8 0 0 1 4.1-3.6A15.7 15.7 0 0 0 7.9 8zM12 20c-.8-1.1-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.9-1.9 4zm2.3-6H9.7a14.7 14.7 0 0 1 0-4h4.6a14.7 14.7 0 0 1 0 4zm.4 5.6c.5-1.1 1-2.3 1.3-3.6h2.8a8 8 0 0 1-4.1 3.6zM16.5 14a16.8 16.8 0 0 0 0-4h3.2a8 8 0 0 1 0 4h-3.2z"/></svg>
+        <span id="c_site">Portfolio</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="foot">🍅 Pomodoro Timer — Ulanzi Deck plugin</div>
+</div>
+
+<script>
+const TUT = {
+  en:{ title:'The <span class="g">Pomodoro</span> Technique', sub:'Focus timer for your Ulanzi Deck',
+    p_what:'Pomodoro is a time-management method that splits work into focused intervals — traditionally 25 minutes — separated by short breaks. Each interval is a “pomodoro”. It boosts concentration and fights procrastination.',
+    k_how:'Method', h_how:'How it works',
+    l_how:['Pick one task to work on.','Focus fully for 25 minutes (one pomodoro).','Take a 5-minute short break.','Every 4 pomodoros, take a longer 15–30 minute break.','Repeat — the long break lets your mind recover.'],
+    k_colors:'Reference', h_colors:'Color guide',
+    l_colors:[['#E74C3C','Focus','Concentrated work time.'],['#27AE60','Short break','Quick rest between focuses.'],['#2980B9','Long break','Longer rest after several pomodoros.'],['#2ECC71','Done','Full cycle complete — green ✓.'],['#8a8f98','Paused','Timer stopped, colors dimmed.'],['alert','Alert','Last 7 seconds: the key blinks to warn you.']],
+    colors_note:'Colors shown are the Classic theme — each of the 9 themes has its own palette, and a custom color can override them all.',
+    k_use:'On the key', h_use:'Using this plugin',
+    l_use:['Press the key to start or pause.','The ring drains as time runs out; the digits show the time left.','The dots show how many pomodoros are set and how many you completed.','Colors change per phase: focus, short break, long break.','The flow runs automatically — it only pauses when you press the key.','In the last 7 seconds the key blinks.','When the cycle ends, a green ✓ blinks for a few seconds.','Optional desktop notifications announce each phase.'],
+    k_tips:'Get the most', h_tips:'Tips',
+    l_tips:['Silence notifications and remove distractions during a pomodoro.','If interrupted, pause — avoid multitasking.','Use breaks to stand up, stretch and rest your eyes.','Adjust durations, themes and effects in the settings panel.'],
+    c_by:'Developed by', c_site:'Portfolio' },
+
+  pt_BR:{ title:'A Técnica <span class="g">Pomodoro</span>', sub:'Cronômetro de foco para o seu Ulanzi Deck',
+    p_what:'Pomodoro é um método de gestão de tempo que divide o trabalho em intervalos de foco — tradicionalmente 25 minutos — separados por pausas curtas. Cada intervalo é um “pomodoro”. Aumenta a concentração e combate a procrastinação.',
+    k_how:'Método', h_how:'Como funciona',
+    l_how:['Escolha uma tarefa para fazer.','Foque totalmente por 25 minutos (um pomodoro).','Faça uma pausa curta de 5 minutos.','A cada 4 pomodoros, faça uma pausa longa de 15–30 minutos.','Repita — a pausa longa deixa a mente descansar.'],
+    k_colors:'Referência', h_colors:'Guia de cores',
+    l_colors:[['#E74C3C','Foco','Tempo de trabalho concentrado.'],['#27AE60','Pausa curta','Descanso rápido entre focos.'],['#2980B9','Pausa longa','Descanso maior após vários pomodoros.'],['#2ECC71','Concluído','Ciclo completo — ✓ verde.'],['#8a8f98','Pausado','Timer parado, cores esmaecidas.'],['alert','Alerta','Últimos 7 segundos: a tecla pisca para avisar.']],
+    colors_note:'As cores mostradas são do tema Classic — cada um dos 9 temas tem sua paleta, e uma cor personalizada pode sobrepor todas.',
+    k_use:'Na tecla', h_use:'Usando este plugin',
+    l_use:['Pressione a tecla para iniciar ou pausar.','O anel esvazia conforme o tempo passa; os dígitos mostram o tempo restante.','Os pontos mostram quantos pomodoros foram definidos e quantos você concluiu.','As cores mudam por fase: foco, pausa curta, pausa longa.','O fluxo corre sozinho — só pausa quando você aperta a tecla.','Nos últimos 7 segundos a tecla pisca.','Ao terminar o ciclo, um ✓ verde pisca por alguns segundos.','Notificações na área de trabalho (opcionais) anunciam cada fase.'],
+    k_tips:'Aproveite ao máximo', h_tips:'Dicas',
+    l_tips:['Silencie notificações e remova distrações durante um pomodoro.','Se for interrompido, pause — evite fazer várias coisas ao mesmo tempo.','Use as pausas para levantar, alongar e descansar os olhos.','Ajuste tempos, temas e efeitos no painel de configurações.'],
+    c_by:'Desenvolvido por', c_site:'Portfólio' },
+
+  pt_PT:{ title:'A Técnica <span class="g">Pomodoro</span>', sub:'Temporizador de foco para o seu Ulanzi Deck',
+    p_what:'O Pomodoro é um método de gestão de tempo que divide o trabalho em intervalos de foco — tradicionalmente 25 minutos — separados por pausas curtas. Cada intervalo é um “pomodoro”. Aumenta a concentração e combate a procrastinação.',
+    k_how:'Método', h_how:'Como funciona',
+    l_how:['Escolha uma tarefa para realizar.','Concentre-se totalmente durante 25 minutos (um pomodoro).','Faça uma pausa curta de 5 minutos.','A cada 4 pomodoros, faça uma pausa longa de 15–30 minutos.','Repita — a pausa longa permite que a mente recupere.'],
+    k_colors:'Referência', h_colors:'Guia de cores',
+    l_colors:[['#E74C3C','Foco','Tempo de trabalho concentrado.'],['#27AE60','Pausa curta','Descanso rápido entre focos.'],['#2980B9','Pausa longa','Descanso maior após vários pomodoros.'],['#2ECC71','Concluído','Ciclo completo — ✓ verde.'],['#8a8f98','Pausado','Temporizador parado, cores esmaecidas.'],['alert','Alerta','Últimos 7 segundos: a tecla pisca para avisar.']],
+    colors_note:'As cores mostradas são do tema Classic — cada um dos 9 temas tem a sua paleta, e uma cor personalizada pode sobrepor todas.',
+    k_use:'Na tecla', h_use:'Usar este plugin',
+    l_use:['Prima a tecla para iniciar ou pausar.','O anel esvazia à medida que o tempo passa; os dígitos mostram o tempo restante.','Os pontos mostram quantos pomodoros foram definidos e quantos concluiu.','As cores mudam por fase: foco, pausa curta, pausa longa.','O fluxo decorre automaticamente — só pausa quando prime a tecla.','Nos últimos 7 segundos a tecla pisca.','Ao terminar o ciclo, um ✓ verde pisca durante alguns segundos.','Notificações no ambiente de trabalho (opcionais) anunciam cada fase.'],
+    k_tips:'Tire o máximo', h_tips:'Dicas',
+    l_tips:['Silencie notificações e remova distrações durante um pomodoro.','Se for interrompido, pause — evite multitarefa.','Use as pausas para se levantar, alongar e descansar os olhos.','Ajuste durações, temas e efeitos no painel de definições.'],
+    c_by:'Desenvolvido por', c_site:'Portfólio' },
+
+  es_ES:{ title:'La Técnica <span class="g">Pomodoro</span>', sub:'Temporizador de enfoque para tu Ulanzi Deck',
+    p_what:'Pomodoro es un método de gestión del tiempo que divide el trabajo en intervalos de enfoque — tradicionalmente 25 minutos — separados por descansos cortos. Cada intervalo es un “pomodoro”. Mejora la concentración y combate la procrastinación.',
+    k_how:'Método', h_how:'Cómo funciona',
+    l_how:['Elige una tarea para hacer.','Concéntrate totalmente durante 25 minutos (un pomodoro).','Toma un descanso corto de 5 minutos.','Cada 4 pomodoros, toma un descanso largo de 15–30 minutos.','Repite — el descanso largo deja que tu mente se recupere.'],
+    k_colors:'Referencia', h_colors:'Guía de colores',
+    l_colors:[['#E74C3C','Enfoque','Tiempo de trabajo concentrado.'],['#27AE60','Descanso corto','Descanso rápido entre enfoques.'],['#2980B9','Descanso largo','Descanso mayor tras varios pomodoros.'],['#2ECC71','Hecho','Ciclo completo — ✓ verde.'],['#8a8f98','Pausado','Temporizador detenido, colores atenuados.'],['alert','Alerta','Últimos 7 segundos: la tecla parpadea para avisar.']],
+    colors_note:'Los colores mostrados son del tema Classic — cada uno de los 9 temas tiene su paleta, y un color personalizado puede sustituirlos.',
+    k_use:'En la tecla', h_use:'Usar este plugin',
+    l_use:['Pulsa la tecla para iniciar o pausar.','El anillo se vacía con el tiempo; los dígitos muestran el tiempo restante.','Los puntos muestran cuántos pomodoros hay y cuántos completaste.','Los colores cambian por fase: enfoque, descanso corto, descanso largo.','El flujo es automático — solo se pausa al pulsar la tecla.','En los últimos 7 segundos la tecla parpadea.','Al terminar el ciclo, un ✓ verde parpadea unos segundos.','Notificaciones de escritorio (opcionales) anuncian cada fase.'],
+    k_tips:'Aprovecha al máximo', h_tips:'Consejos',
+    l_tips:['Silencia notificaciones y elimina distracciones durante un pomodoro.','Si te interrumpen, pausa — evita la multitarea.','Usa los descansos para levantarte, estirarte y descansar la vista.','Ajusta duraciones, temas y efectos en el panel de ajustes.'],
+    c_by:'Desarrollado por', c_site:'Portafolio' },
+
+  de_DE:{ title:'Die <span class="g">Pomodoro</span>-Technik', sub:'Fokus-Timer für dein Ulanzi Deck',
+    p_what:'Pomodoro ist eine Zeitmanagement-Methode, die Arbeit in Fokus-Intervalle — traditionell 25 Minuten — mit kurzen Pausen unterteilt. Jedes Intervall heißt „Pomodoro“. Es steigert die Konzentration und bekämpft Aufschieben.',
+    k_how:'Methode', h_how:'So funktioniert es',
+    l_how:['Wähle eine Aufgabe aus.','Konzentriere dich 25 Minuten voll (ein Pomodoro).','Mache eine kurze 5-Minuten-Pause.','Nach 4 Pomodoros eine längere Pause von 15–30 Minuten.','Wiederholen — die lange Pause lässt den Kopf erholen.'],
+    k_colors:'Referenz', h_colors:'Farbübersicht',
+    l_colors:[['#E74C3C','Fokus','Konzentrierte Arbeitszeit.'],['#27AE60','Kurze Pause','Kurze Erholung zwischen Fokusphasen.'],['#2980B9','Lange Pause','Längere Erholung nach mehreren Pomodoros.'],['#2ECC71','Fertig','Zyklus abgeschlossen — grünes ✓.'],['#8a8f98','Pausiert','Timer gestoppt, Farben gedimmt.'],['alert','Warnung','Letzte 7 Sekunden: die Taste blinkt.']],
+    colors_note:'Gezeigt ist das Classic-Design — jedes der 9 Designs hat seine Palette, und eine eigene Farbe kann alle überschreiben.',
+    k_use:'Auf der Taste', h_use:'Dieses Plugin verwenden',
+    l_use:['Taste drücken zum Starten oder Pausieren.','Der Ring leert sich mit der Zeit; die Ziffern zeigen die Restzeit.','Die Punkte zeigen, wie viele Pomodoros eingestellt und erledigt sind.','Farben ändern sich je Phase: Fokus, kurze, lange Pause.','Der Ablauf läuft automatisch — pausiert nur per Tastendruck.','In den letzten 7 Sekunden blinkt die Taste.','Am Ende des Zyklus blinkt ein grünes ✓ einige Sekunden.','Optionale Desktop-Hinweise kündigen jede Phase an.'],
+    k_tips:'Hol das Beste raus', h_tips:'Tipps',
+    l_tips:['Schalte Benachrichtigungen stumm und entferne Ablenkungen.','Bei Unterbrechung pausieren — kein Multitasking.','Nutze Pausen zum Aufstehen, Dehnen und Augen entspannen.','Passe Dauer, Designs und Effekte im Einstellungsfeld an.'],
+    c_by:'Entwickelt von', c_site:'Portfolio' },
+
+  fr_FR:{ title:'La Technique <span class="g">Pomodoro</span>', sub:'Minuteur de focus pour votre Ulanzi Deck',
+    p_what:'Pomodoro est une méthode de gestion du temps qui découpe le travail en intervalles de concentration — traditionnellement 25 minutes — séparés par de courtes pauses. Chaque intervalle est un « pomodoro ». Elle améliore la concentration et combat la procrastination.',
+    k_how:'Méthode', h_how:'Comment ça marche',
+    l_how:['Choisissez une tâche à faire.','Concentrez-vous pleinement 25 minutes (un pomodoro).','Prenez une courte pause de 5 minutes.','Tous les 4 pomodoros, prenez une longue pause de 15–30 minutes.','Répétez — la longue pause repose l’esprit.'],
+    k_colors:'Référence', h_colors:'Guide des couleurs',
+    l_colors:[['#E74C3C','Focus','Temps de travail concentré.'],['#27AE60','Courte pause','Repos rapide entre les focus.'],['#2980B9','Longue pause','Repos plus long après plusieurs pomodoros.'],['#2ECC71','Terminé','Cycle complet — ✓ vert.'],['#8a8f98','En pause','Minuteur arrêté, couleurs atténuées.'],['alert','Alerte','7 dernières secondes : la touche clignote.']],
+    colors_note:'Les couleurs montrées sont le thème Classic — chacun des 9 thèmes a sa palette, et une couleur personnalisée peut tout remplacer.',
+    k_use:'Sur la touche', h_use:'Utiliser ce plugin',
+    l_use:['Appuyez sur la touche pour démarrer ou mettre en pause.','L’anneau se vide avec le temps ; les chiffres montrent le temps restant.','Les points indiquent le nombre de pomodoros prévus et accomplis.','Les couleurs changent selon la phase : focus, courte, longue pause.','Le déroulement est automatique — il ne s’arrête qu’à l’appui de la touche.','Dans les 7 dernières secondes, la touche clignote.','À la fin du cycle, un ✓ vert clignote quelques secondes.','Des notifications bureau (optionnelles) annoncent chaque phase.'],
+    k_tips:'Profitez-en', h_tips:'Conseils',
+    l_tips:['Coupez les notifications et supprimez les distractions.','En cas d’interruption, mettez en pause — évitez le multitâche.','Profitez des pauses pour vous lever, vous étirer, reposer vos yeux.','Ajustez durées, thèmes et effets dans le panneau des réglages.'],
+    c_by:'Développé par', c_site:'Portfolio' },
+
+  ja_JP:{ title:'<span class="g">ポモドーロ</span>・テクニック', sub:'Ulanzi Deck 用の集中タイマー',
+    p_what:'ポモドーロは、作業を集中時間（伝統的に25分）と短い休憩に分ける時間管理法です。各区間を「ポモドーロ」と呼びます。集中力を高め、先延ばしを防ぎます。',
+    k_how:'方法', h_how:'仕組み',
+    l_how:['取り組むタスクを1つ選ぶ。','25分間（1ポモドーロ）集中する。','5分の短い休憩を取る。','4ポモドーロごとに15〜30分の長い休憩を取る。','繰り返す — 長い休憩で頭を回復させる。'],
+    k_colors:'リファレンス', h_colors:'カラーガイド',
+    l_colors:[['#E74C3C','集中','集中して作業する時間。'],['#27AE60','短い休憩','集中の合間の短い休息。'],['#2980B9','長い休憩','数回の後のより長い休息。'],['#2ECC71','完了','サイクル完了 — 緑の✓。'],['#8a8f98','一時停止','タイマー停止、色が淡くなる。'],['alert','警告','残り7秒：キーが点滅して知らせる。']],
+    colors_note:'表示色は Classic テーマです。9つのテーマそれぞれに独自の配色があり、カスタム色で上書きもできます。',
+    k_use:'キー上', h_use:'このプラグインの使い方',
+    l_use:['キーを押して開始／一時停止。','時間が減るとリングが減り、数字が残り時間を表示。','ドットは設定したポモドーロ数と完了数を表示。','フェーズごとに色が変化：集中・短い休憩・長い休憩。','フローは自動進行 — キーを押した時だけ一時停止。','残り7秒でキーが点滅。','サイクル完了時に緑の✓が数秒点滅。','任意のデスクトップ通知が各フェーズを知らせます。'],
+    k_tips:'活用のコツ', h_tips:'ヒント',
+    l_tips:['ポモドーロ中は通知を消し、気を散らすものを排除。','中断されたら一時停止 — マルチタスクを避ける。','休憩で立ち上がり、ストレッチ、目を休める。','設定パネルで時間・テーマ・効果を調整。'],
+    c_by:'開発者', c_site:'ポートフォリオ' },
+
+  ko_KR:{ title:'<span class="g">뽀모도로</span> 기법', sub:'Ulanzi Deck용 집중 타이머',
+    p_what:'뽀모도로는 작업을 집중 시간(전통적으로 25분)과 짧은 휴식으로 나누는 시간 관리법입니다. 각 구간을 ‘뽀모도로’라고 부릅니다. 집중력을 높이고 미루는 습관을 줄입니다.',
+    k_how:'방법', h_how:'작동 방식',
+    l_how:['할 작업을 하나 선택합니다.','25분(1뽀모도로) 동안 완전히 집중합니다.','5분 짧은 휴식을 가집니다.','4뽀모도로마다 15~30분 긴 휴식을 가집니다.','반복 — 긴 휴식으로 머리를 회복시킵니다.'],
+    k_colors:'참고', h_colors:'색상 가이드',
+    l_colors:[['#E74C3C','집중','집중 작업 시간.'],['#27AE60','짧은 휴식','집중 사이의 빠른 휴식.'],['#2980B9','긴 휴식','여러 번 후의 더 긴 휴식.'],['#2ECC71','완료','사이클 완료 — 초록 ✓.'],['#8a8f98','일시정지','타이머 정지, 색이 흐려짐.'],['alert','경고','마지막 7초: 키가 깜빡여 알림.']],
+    colors_note:'표시된 색은 Classic 테마입니다. 9개 테마마다 고유 팔레트가 있고, 사용자 색으로 모두 덮을 수 있습니다.',
+    k_use:'키에서', h_use:'이 플러그인 사용법',
+    l_use:['키를 눌러 시작/일시정지합니다.','시간이 줄면 링이 줄고, 숫자가 남은 시간을 보여줍니다.','점은 설정한 뽀모도로 수와 완료 수를 표시합니다.','단계별로 색이 바뀝니다: 집중, 짧은 휴식, 긴 휴식.','흐름은 자동 — 키를 누를 때만 일시정지합니다.','마지막 7초에 키가 깜빡입니다.','사이클이 끝나면 초록 ✓가 몇 초간 깜빡입니다.','선택적 데스크톱 알림이 각 단계를 알립니다.'],
+    k_tips:'200% 활용', h_tips:'팁',
+    l_tips:['뽀모도로 중에는 알림을 끄고 방해 요소를 제거하세요.','방해받으면 일시정지 — 멀티태스킹을 피하세요.','휴식에 일어나 스트레칭하고 눈을 쉬게 하세요.','설정 패널에서 시간, 테마, 효과를 조정하세요.'],
+    c_by:'개발자', c_site:'포트폴리오' },
+
+  zh_CN:{ title:'<span class="g">番茄</span>工作法', sub:'Ulanzi Deck 的专注计时器',
+    p_what:'番茄工作法是一种时间管理方法，把工作分成专注时段（传统为 25 分钟）并以短暂休息隔开。每个时段称为一个“番茄”。它能提升专注力、对抗拖延。',
+    k_how:'方法', h_how:'如何运作',
+    l_how:['选择一项要做的任务。','全神贯注 25 分钟（一个番茄）。','休息 5 分钟（短休息）。','每 4 个番茄，进行 15–30 分钟的长休息。','重复 — 长休息让大脑恢复。'],
+    k_colors:'参考', h_colors:'颜色指南',
+    l_colors:[['#E74C3C','专注','专注工作的时间。'],['#27AE60','短休息','专注之间的快速休息。'],['#2980B9','长休息','多个番茄后的较长休息。'],['#2ECC71','完成','整个周期完成 — 绿色 ✓。'],['#8a8f98','暂停','计时停止，颜色变暗。'],['alert','提醒','最后 7 秒：按键闪烁提醒。']],
+    colors_note:'所示为 Classic 主题 — 9 个主题各有配色，自定义颜色可覆盖全部。',
+    k_use:'按键上', h_use:'使用本插件',
+    l_use:['按下按键开始或暂停。','时间流逝时圆环减少，数字显示剩余时间。','圆点显示设定的番茄数量与已完成数量。','颜色按阶段变化：专注、短休息、长休息。','流程自动进行 — 只有按键时才暂停。','最后 7 秒按键闪烁。','完成周期时，绿色 ✓ 闪烁几秒。','可选的桌面通知会提示每个阶段。'],
+    k_tips:'用得更好', h_tips:'小贴士',
+    l_tips:['番茄期间静音通知、移除干扰。','被打断时请暂停 — 避免多任务。','休息时站起来、伸展、放松眼睛。','在设置面板调整时长、主题与特效。'],
+    c_by:'开发者', c_site:'作品集' },
+
+  zh_HK:{ title:'<span class="g">番茄</span>工作法', sub:'Ulanzi Deck 的專注計時器',
+    p_what:'番茄工作法是一種時間管理方法，把工作分成專注時段（傳統為 25 分鐘）並以短暫休息隔開。每個時段稱為一個「番茄」。它能提升專注力、對抗拖延。',
+    k_how:'方法', h_how:'如何運作',
+    l_how:['選擇一項要做的任務。','全神貫注 25 分鐘（一個番茄）。','休息 5 分鐘（短休息）。','每 4 個番茄，進行 15–30 分鐘的長休息。','重複 — 長休息讓大腦恢復。'],
+    k_colors:'參考', h_colors:'顏色指南',
+    l_colors:[['#E74C3C','專注','專注工作的時間。'],['#27AE60','短休息','專注之間的快速休息。'],['#2980B9','長休息','多個番茄後的較長休息。'],['#2ECC71','完成','整個週期完成 — 綠色 ✓。'],['#8a8f98','暫停','計時停止，顏色變暗。'],['alert','提醒','最後 7 秒：按鍵閃爍提醒。']],
+    colors_note:'所示為 Classic 主題 — 9 個主題各有配色，自訂顏色可覆蓋全部。',
+    k_use:'按鍵上', h_use:'使用本外掛',
+    l_use:['按下按鍵開始或暫停。','時間流逝時圓環減少，數字顯示剩餘時間。','圓點顯示設定的番茄數量與已完成數量。','顏色按階段變化：專注、短休息、長休息。','流程自動進行 — 只有按鍵時才暫停。','最後 7 秒按鍵閃爍。','完成週期時，綠色 ✓ 閃爍幾秒。','可選的桌面通知會提示每個階段。'],
+    k_tips:'用得更好', h_tips:'小貼士',
+    l_tips:['番茄期間靜音通知、移除干擾。','被打斷時請暫停 — 避免多工。','休息時站起來、伸展、放鬆眼睛。','在設定面板調整時長、主題與特效。'],
+    c_by:'開發者', c_site:'作品集' }
+};
+
+function detectLang(){
+  const hash=new URLSearchParams((location.hash||'').replace(/^#/,'')).get('lang');
+  const q=new URLSearchParams(location.search).get('lang')||hash;
+  let l=(q||navigator.language||'en').replace('-','_');
+  if(/^zh/i.test(l)) return (/CN|Hans/i.test(l))?'zh_CN':'zh_HK';
+  if(/^pt/i.test(l)) return (/BR/i.test(l))?'pt_BR':'pt_PT';
+  if(/^en/i.test(l)) return 'en';
+  if(TUT[l]) return l;
+  const map={es:'es_ES',de:'de_DE',fr:'fr_FR',ja:'ja_JP',ko:'ko_KR'};
+  const s=l.split('_')[0];
+  return map[s]||(TUT[s]?s:'en');
+}
+
+const d=TUT[detectLang()]||TUT.en;
+document.documentElement.lang=detectLang();
+const set=(id,html)=>{const e=document.getElementById(id); if(e) e.innerHTML=html;};
+const txt=(id,t)=>{const e=document.getElementById(id); if(e) e.textContent=t;};
+document.title=(d.title||'Pomodoro').replace(/<[^>]+>/g,'');
+set('title',d.title); txt('sub',d.sub); txt('p_what',d.p_what);
+txt('k_how',d.k_how); txt('h_how',d.h_how);
+txt('k_colors',d.k_colors); txt('h_colors',d.h_colors); txt('colors_note',d.colors_note);
+txt('k_use',d.k_use); txt('h_use',d.h_use);
+txt('k_tips',d.k_tips); txt('h_tips',d.h_tips);
+txt('c_by',d.c_by); txt('c_site',d.c_site);
+
+const li=(id,arr)=>set(id,arr.map(x=>`<li>${x}</li>`).join(''));
+li('l_how',d.l_how); li('l_use',d.l_use); li('l_tips',d.l_tips);
+
+set('l_colors', d.l_colors.map(([c,n,desc])=>{
+  const sw = c==='alert' ? `<span class="sw alert"></span>` : `<span class="sw" style="background:${c}"></span>`;
+  return `<div class="crow">${sw}<div><div class="cname">${n}</div><div class="cdesc">${desc}</div></div></div>`;
+}).join(''));
+</script>
+</body>
+</html>

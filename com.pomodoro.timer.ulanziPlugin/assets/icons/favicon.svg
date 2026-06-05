@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <linearGradient id="fred" gradientUnits="userSpaceOnUse" x1="40" y1="20" x2="216" y2="232">
+      <stop offset="0"   stop-color="#ff7a6b"/>
+      <stop offset="0.5" stop-color="#E74C3C"/>
+      <stop offset="1"   stop-color="#c0392b"/>
+    </linearGradient>
+  </defs>
+  <rect x="115" y="14" width="26" height="20" rx="7" fill="url(#fred)"/>
+  <rect x="123" y="30" width="10" height="14" rx="3" fill="url(#fred)"/>
+  <circle cx="128" cy="142" r="88" fill="none" stroke="url(#fred)" stroke-width="20"
+    stroke-linecap="round" stroke-dasharray="430 123" transform="rotate(-108 128 142)"/>
+  <line x1="128" y1="142" x2="128" y2="88"  stroke="url(#fred)" stroke-width="17" stroke-linecap="round"/>
+  <line x1="128" y1="142" x2="178" y2="142" stroke="url(#fred)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="128" cy="142" r="13" fill="url(#fred)"/>
+</svg>

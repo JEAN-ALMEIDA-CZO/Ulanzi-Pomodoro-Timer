@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+  <title>Pomodoro Timer</title>
+  <link rel="stylesheet" href="../libs/css/udpi.css">
+  <style>
+    /* bundled timer fonts (same files the key uses) so the preview matches */
+    @font-face { font-family: 'pomo-sans';    src: url('../assets/fonts/sans.ttf'); }
+    @font-face { font-family: 'pomo-mono';    src: url('../assets/fonts/mono.ttf'); }
+    @font-face { font-family: 'pomo-serif';   src: url('../assets/fonts/serif.ttf'); }
+    @font-face { font-family: 'pomo-display'; src: url('../assets/fonts/display.ttf'); }
+  </style>
+  <style>
+    body { padding-bottom: 12px; }
+
+    :root { --accent: #E74C3C; }  /* classic theme color */
+
+    .section {
+      margin: 0 0 4px;
+      border-top: 1px solid #333;
+    }
+    .section:first-of-type { border-top: none; }
+    .section-title {
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 12px 16px 4px;
+    }
+
+    /* orange accent on focused/selected controls */
+    input[type="number"]:focus,
+    select:focus { border-color: var(--accent) !important; outline: none; }
+    input[type="range"] { accent-color: var(--accent); }
+    select { accent-color: var(--accent); }
+
+    .row {
+      display: flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 2px 16px;
+    }
+    .row .label {
+      flex: 0 0 108px;
+      text-align: right;
+      padding-right: 10px;
+      font-size: 9pt;
+      color: #c0c0c0;
+    }
+    .row .control {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input[type="number"], select {
+      background: var(--udpi-background);
+      color: var(--udpi-color);
+      border: 1px solid #4a4a4a;
+      border-radius: 4px;
+      min-height: 26px;
+      min-width: 0 !important;
+      box-sizing: border-box;
+      padding: 0 6px !important;
+    }
+    input[type="number"] { width: 64px; flex: 0 0 64px; }
+    select { width: 100%; flex: 1; background-position: 96% center; }
+    .unit { color: #777; font-size: 8.5pt; }
+
+    /* segmented number with steppers feel via range */
+    .slider-row .control { gap: 10px; }
+    input[type="range"] { flex: 1; }
+    .slider-val {
+      flex: 0 0 52px; text-align: center; font-weight: 700;
+      color: #fff; font-size: 10pt;
+    }
+
+    /* toggle switch */
+    .switch { position: relative; width: 40px; height: 22px; flex: 0 0 40px; }
+    .switch input { display: none; }
+    .switch .track {
+      position: absolute; inset: 0; border-radius: 22px;
+      background: #444; transition: background .2s; cursor: pointer;
+    }
+    .switch .track::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #ddd; transition: transform .2s;
+    }
+    .switch input:checked + .track { background: var(--accent); }
+    .switch input:checked + .track::after { transform: translateX(18px); }
+    .switch-hint { color: #888; font-size: 8.5pt; margin-left: 10px; }
+
+    /* theme swatches */
+    .themes { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 16px 10px; }
+    .theme-swatch {
+      width: 30px; height: 30px; border-radius: 6px; cursor: pointer;
+      border: 2px solid transparent; position: relative; box-sizing: border-box;
+      display: flex; overflow: hidden;
+    }
+    .theme-swatch.active { border-color: var(--accent); }
+    .theme-swatch i { flex: 1; display: block; }
+
+    .preview-wrap { display: flex; justify-content: center; padding: 8px 0 12px; }
+    .preview-key {
+      width: 104px; height: 104px; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.5);
+    }
+    .preview-key svg { display: block; width: 100%; height: 100%; }
+
+    .reset-row { padding: 12px 16px 4px; }
+    .reset-btn {
+      width: 100%; min-height: 32px; border-radius: 6px; cursor: pointer;
+      background: #3a1a1a; border: 1px solid #E74C3C; color: #E74C3C;
+      font-weight: 600; font-size: 9.5pt; transition: all .15s;
+    }
+    .reset-btn:hover  { background: #4a2020; }
+    .reset-btn:active { background: #E74C3C; color: #fff; }
+
+    .tut-btn {
+      width: 100%; min-height: 32px; border-radius: 6px; cursor: pointer;
+      background: #14241a; border: 1px solid #2ECC71; color: #2ECC71;
+      font-weight: 600; font-size: 9.5pt; transition: all .15s;
+    }
+    .tut-btn:hover  { background: #1c3326; }
+    .tut-btn:active { background: #2ECC71; color: #fff; }
+
+    .tip { padding: 8px 16px 0; color: #666; font-size: 8.5pt; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="udpi-wrapper hidden">
+    <form id="property-inspector">
+
+      <!-- DURATIONS -->
+      <div class="section">
+        <div class="section-title" data-localize>Durations</div>
+
+        <div class="row slider-row">
+          <div class="label" data-localize>Focus</div>
+          <div class="control">
+            <input type="range" name="focusDuration" id="focusDuration" min="1" max="90" value="25">
+            <span class="slider-val"><span id="focusDuration-val">25</span><span class="unit" data-localize>min</span></span>
+          </div>
+        </div>
+
+        <div class="row slider-row">
+          <div class="label" data-localize>Short Break</div>
+          <div class="control">
+            <input type="range" name="shortBreakDuration" id="shortBreakDuration" min="1" max="30" value="5">
+            <span class="slider-val"><span id="shortBreakDuration-val">5</span><span class="unit" data-localize>min</span></span>
+          </div>
+        </div>
+
+        <div class="row slider-row">
+          <div class="label" data-localize>Long Break</div>
+          <div class="control">
+            <input type="range" name="longBreakDuration" id="longBreakDuration" min="1" max="60" value="15">
+            <span class="slider-val"><span id="longBreakDuration-val">15</span><span class="unit" data-localize>min</span></span>
+          </div>
+        </div>
+
+        <div class="row slider-row">
+          <div class="label" data-localize>Pomodoros</div>
+          <div class="control">
+            <input type="range" name="pomodorosBeforeLongBreak" id="pomodorosBeforeLongBreak" min="1" max="8" value="4">
+            <span class="slider-val"><span id="pomodorosBeforeLongBreak-val">4</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BEHAVIOR -->
+      <div class="section">
+        <div class="section-title" data-localize>Behavior</div>
+
+        <div class="row">
+          <div class="label" data-localize>Notify</div>
+          <div class="control">
+            <label class="switch">
+              <input type="checkbox" name="notify" id="notify" value="true">
+              <span class="track"></span>
+            </label>
+            <span class="switch-hint" data-localize>Desktop alert on end</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="section">
+        <div class="section-title" data-localize>Theme</div>
+
+        <div class="preview-wrap"><div id="preview" class="preview-key"></div></div>
+
+        <input type="hidden" name="theme" id="theme" value="classic">
+        <div class="themes" id="theme-swatches"></div>
+
+        <div class="row">
+          <div class="label" data-localize>Font</div>
+          <div class="control">
+            <select name="font" id="font">
+              <option value="sans"    data-localize>Sans</option>
+              <option value="mono"    data-localize>Mono</option>
+              <option value="serif"   data-localize>Serif</option>
+              <option value="display" data-localize>Display</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label" data-localize>Animation</div>
+          <div class="control">
+            <select name="ringAnim" id="ringAnim">
+              <option value="none"  data-localize>None</option>
+              <option value="pulse" data-localize>Pulse</option>
+              <option value="comet" data-localize>Comet</option>
+              <option value="sweep" data-localize>Sweep</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label" data-localize>Background</div>
+          <div class="control">
+            <select name="bgAnim" id="bgAnim">
+              <option value="none"     data-localize>None</option>
+              <option value="aurora"   data-localize>Aurora</option>
+              <option value="glow"     data-localize>Glow</option>
+              <option value="sweep"    data-localize>Sweep</option>
+              <option value="progress" data-localize>Progress</option>
+              <option value="vignette" data-localize>Vignette</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label" data-localize>Glossy text</div>
+          <div class="control">
+            <label class="switch">
+              <input type="checkbox" id="textShimmer">
+              <span class="track"></span>
+            </label>
+            <span class="switch-hint" data-localize>Shimmer effect</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label" data-localize>Custom color</div>
+          <div class="control">
+            <label class="switch">
+              <input type="checkbox" id="useCustomColor">
+              <span class="track"></span>
+            </label>
+            <input type="color" id="customColor" name="customColor" value="#E74C3C" disabled
+              style="width:36px;height:28px;padding:0;border:1px solid #4a4a4a;border-radius:4px;background:none;cursor:pointer;margin-left:8px;">
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="reset-row">
+      <button class="reset-btn" id="btn-reset" type="button" data-localize>Reset Timer</button>
+    </div>
+
+    <div class="reset-row">
+      <button class="tut-btn" id="btn-tutorial" type="button" data-localize>Tutorial</button>
+    </div>
+
+    <p class="tip" data-localize>Click key: start / pause</p>
+  </div>
+
+  <script src="../libs/js/constants.js"></script>
+  <script src="../libs/js/eventEmitter.js"></script>
+  <script src="../libs/js/timers.js"></script>
+  <script src="../libs/js/utils.js"></script>
+  <script src="../libs/js/ulanzideckApi.js"></script>
+  <script src="./inspector.js"></script>
+</body>
+</html>

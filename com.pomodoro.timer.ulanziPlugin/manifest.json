@@ -1,0 +1,37 @@
+{
+  "Author": "Jean Almeida",
+  "Name": "Pomodoro Timer",
+  "Description": "Maximize your productivity with the Pomodoro Timer plugin for Stream Deck. This plugin allows you to easily manage your work sessions and breaks using the popular Pomodoro Technique. With customizable timers and intuitive controls, you can stay focused and organized throughout your day. Whether you're a student, professional, or anyone looking to boost their productivity, the Pomodoro Timer plugin is the perfect tool to help you achieve your goals.",
+  "Category": "Pomodoro",
+  "CategoryIcon": "assets/icons/brand.svg",
+  "Icon": "assets/icons/brand.svg",
+  "Version": "1.0.0",
+  "UUID": "com.pomodoro.timer.deck",
+  "Type": "JavaScript",
+  "CodePath": "plugin/app.js",
+  "PrivateAPI": true,
+  "SupportedInMultiActions": false,
+  "Actions": [
+    {
+      "Name": "Pomodoro Timer",
+      "Icon": "assets/icons/actionIcon.svg",
+      "UUID": "com.pomodoro.timer.deck.timer",
+      "PropertyInspectorPath": "property-inspector/inspector.html",
+      "States": [
+        {
+          "Name": "Default",
+          "Image": "assets/icons/actionIcon.svg"
+        }
+      ],
+      "Controllers": ["Keypad"],
+      "SupportedInMultiActions": false
+    }
+  ],
+  "OS": [
+    { "Platform": "windows", "MinimumVersion": "10" },
+    { "Platform": "mac",     "MinimumVersion": "10.11" }
+  ],
+  "Software": {
+    "MinVersion": "2.1.0"
+  }
+}
