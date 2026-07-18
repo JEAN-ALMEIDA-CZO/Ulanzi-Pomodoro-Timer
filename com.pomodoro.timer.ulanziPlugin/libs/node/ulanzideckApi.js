@@ -38,7 +38,11 @@ class UlanzideckApi extends EventEmitter {
 
     this.websocket.onmessage = (evt) => {
       const data = evt?.data ? JSON.parse(evt.data) : null;
-      if (!data || (typeof data.code !== 'undefined' && data.cmdType !== 'REQUEST')) return;
+      if (!data) return;
+      // keydown/keyup must never be dropped by the generic filter (they can arrive
+      // with a code + non-REQUEST cmdType) — they're needed for long-press detection.
+      const isKeyEvt = data.cmd === Events.KEYDOWN || data.cmd === Events.KEYUP;
+      if (!isKeyEvt && typeof data.code !== 'undefined' && data.cmdType !== 'REQUEST') return;
 
       if (!this.key      && data.uuid === this.uuid && data.key)      this.key      = data.key;
       if (!this.actionid && data.uuid === this.uuid && data.actionid) this.actionid = data.actionid;
@@ -94,6 +98,8 @@ class UlanzideckApi extends EventEmitter {
   onParamFromApp(fn)   { this.on(Events.PARAMFROMAPP,    fn); return this; }
   onParamFromPlugin(fn){ this.on(Events.PARAMFROMPLUGIN, fn); return this; }
   onRun(fn)            { this.on(Events.RUN,             fn); return this; }
+  onKeyDown(fn)        { this.on(Events.KEYDOWN,         fn); return this; }
+  onKeyUp(fn)          { this.on(Events.KEYUP,           fn); return this; }
   onSetActive(fn)      { this.on(Events.SETACTIVE,       fn); return this; }
   onClear(fn)          { this.on(Events.CLEAR,           fn); return this; }
   onSelectdialog(fn)   { this.on(Events.SELECTDIALOG,    fn); return this; }

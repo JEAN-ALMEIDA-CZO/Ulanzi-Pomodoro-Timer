@@ -9,7 +9,7 @@ import opentype from 'opentype.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ICON_DIR = path.join(__dirname, '..', 'assets', 'icons');
 
-const PLUGIN_VERSION = '1.0.0';
+const PLUGIN_VERSION = '1.0.1';
 const BOOT_LOG = path.join(os.tmpdir(), 'pomodoro_boot.log');
 
 // Write a boot stamp so it's easy to confirm the latest code is actually running
@@ -109,12 +109,22 @@ function glyphSVG(fontKey, text, cx, cy, fontSize, fill, opacity) {
       fill="${fill}" font-size="${fontSize}" font-weight="bold"
       font-family="Arial, Helvetica, sans-serif" opacity="${opacity}">${text}</text>`;
   }
-  const p  = textToPath(font, text, fontSize);
-  const bb = p.getBoundingBox();
-  const dx = cx - (bb.x1 + (bb.x2 - bb.x1) / 2);
-  const dy = cy - (bb.y1 + (bb.y2 - bb.y1) / 2);
-  return `<path transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)})" d="${p.toPathData(2)}" fill="${fill}" opacity="${opacity}"/>`;
+  // memoize the heavy bits (path data + bbox) per font/size/text — the mm:ss redraw
+  // runs once a second and only ever uses a handful of distinct strings.
+  const k = fontKey + '|' + fontSize + '|' + text;
+  let g = _glyphCache.get(k);
+  if (!g) {
+    const p  = textToPath(font, text, fontSize);
+    const bb = p.getBoundingBox();
+    g = { d: p.toPathData(2), x1: bb.x1, x2: bb.x2, y1: bb.y1, y2: bb.y2 };
+    if (_glyphCache.size > 300) _glyphCache.clear();
+    _glyphCache.set(k, g);
+  }
+  const dx = cx - (g.x1 + (g.x2 - g.x1) / 2);
+  const dy = cy - (g.y1 + (g.y2 - g.y1) / 2);
+  return `<path transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)})" d="${g.d}" fill="${fill}" opacity="${opacity}"/>`;
 }
+const _glyphCache = new Map();
 
 const PHASE_LABELS_DEFAULT = {
   idle:       'READY',
@@ -750,6 +760,8 @@ class PomodoroTimer {
         running:            this.running,
         bgAnim:             this.config.bgAnim
       });
+      if (svg === this._lastSvg) return; // skip redundant WS pushes (no visual change)
+      this._lastSvg = svg;
       this.$UD.setBaseDataIcon(this.context, svg);
     } catch (e) {
       console.error('[Pomodoro] render error:', e.message);
@@ -771,8 +783,51 @@ $UD.connect('com.pomodoro.timer.deck');
 $UD.onConnected(() => bootLog('connected to Ulanzi'));
 $UD.onError((e)     => console.error('[Pomodoro] Error:', typeof e === 'string' ? e : ''));
 
+// One live instance per action. Moving a key changes its context (position), so the
+// old instance would survive with its timers and both would paint the same key.
+function dropStaleFor(ctx) {
+  let actionid;
+  try { actionid = $UD.decodeContext(ctx).actionid; } catch (e) { return; }
+  if (!actionid) return;
+  for (const k of Object.keys(ACTION_CACHES)) {
+    if (k === ctx) continue;
+    let a; try { a = $UD.decodeContext(k).actionid; } catch (e) { continue; }
+    if (a === actionid) { ACTION_CACHES[k].destroy(); delete ACTION_CACHES[k]; }
+  }
+}
+const ensure = (ctx) => {
+  if (!ACTION_CACHES[ctx]) { dropStaleFor(ctx); ACTION_CACHES[ctx] = new PomodoroTimer(ctx, $UD); }
+  return ACTION_CACHES[ctx];
+};
+
+// ── long press = reset ────────────────────────────────────────────────────────
+// Ulanzi fires keydown → (keyup) → run. We start a timer on keydown; if the key is
+// still held at LONG_PRESS_MS we reset and flag it so the trailing `run` (short-press
+// action) is swallowed. If the Studio build never sends keydown/keyup, nothing here
+// runs and `run` keeps its original start/pause behaviour — no regression.
+const LONG_PRESS_MS = 1500;
+const _press = {}; // context -> { timer, fired }
+
+$UD.onKeyDown((jsn) => {
+  const ctx = jsn.context;
+  const inst = ensure(ctx);
+  const p = _press[ctx] || (_press[ctx] = { timer: null, fired: false });
+  if (p.timer) clearTimeout(p.timer);
+  p.fired = false;
+  p.timer = setTimeout(() => {
+    p.fired = true; p.timer = null;
+    inst.reset();          // held long enough → restart the timer
+  }, LONG_PRESS_MS);
+});
+
+$UD.onKeyUp((jsn) => {
+  const p = _press[jsn.context];
+  if (p && p.timer) { clearTimeout(p.timer); p.timer = null; }
+});
+
 $UD.onAdd((jsn) => {
   const ctx = jsn.context;
+  dropStaleFor(ctx);
   if (!ACTION_CACHES[ctx]) ACTION_CACHES[ctx] = new PomodoroTimer(ctx, $UD);
   if (jsn.param) ACTION_CACHES[ctx].setConfig(jsn.param);
 });
@@ -789,8 +844,9 @@ $UD.onParamFromPlugin((jsn) => {
 
 $UD.onRun((jsn) => {
   const ctx = jsn.context;
-  if (!ACTION_CACHES[ctx]) ACTION_CACHES[ctx] = new PomodoroTimer(ctx, $UD);
-  ACTION_CACHES[ctx].toggleStartPause();
+  const p = _press[ctx];
+  if (p && p.fired) { p.fired = false; return; } // long press already reset → ignore
+  ensure(ctx).toggleStartPause();
 });
 
 $UD.onSetActive((jsn) => {
@@ -801,6 +857,9 @@ $UD.onSetActive((jsn) => {
 $UD.onClear((jsn) => {
   if (!jsn.param) return;
   for (const item of jsn.param) {
+    const p = _press[item.context];
+    if (p && p.timer) clearTimeout(p.timer);
+    delete _press[item.context];
     const inst = ACTION_CACHES[item.context];
     if (inst) { inst.destroy(); delete ACTION_CACHES[item.context]; }
   }

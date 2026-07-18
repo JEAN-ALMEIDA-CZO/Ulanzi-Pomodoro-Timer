@@ -5,7 +5,7 @@
   "Category": "Pomodoro",
   "CategoryIcon": "assets/icons/brand.svg",
   "Icon": "assets/icons/brand.svg",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "UUID": "com.pomodoro.timer.deck",
   "Type": "JavaScript",
   "CodePath": "plugin/app.js",
