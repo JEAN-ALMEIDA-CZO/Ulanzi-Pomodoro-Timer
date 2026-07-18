@@ -1,130 +1,134 @@
 <p align="center">
-  <img src="banner_pomodoro.jpeg" alt="Pomodoro Timer for Ulanzi Deck" width="100%">
-  <img src="com.pomodoro.timer.ulanziPlugin/assets/icons/brand.png" alt="Pomodoro Timer for Ulanzi Deck" width="20%">
+  <img alt="Pomodoro Timer" src="/com.pomodoro.timer.ulanziPlugin/assets/icons/brand-red.png" width="12%">
 </p>
-
 <h1 align="center">Pomodoro Timer — Ulanzi Deck Plugin</h1>
 
 <p align="center">
-  A focus timer with a live progress ring, vector fonts, premium animations and desktop
-  notifications — right on your Ulanzi Deck key.
+  <b>A focus timer on a single key.</b><br>
+  Runs the full Pomodoro flow — focus, short break, long break — right on your Ulanzi Deck.
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-1.0.0-E74C3C">
-  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-2980B9">
-  <img alt="i18n" src="https://img.shields.io/badge/languages-10-2ECC71">
-  <img alt="license" src="https://img.shields.io/badge/license-MIT-888">
+  <img alt="version" src="https://img.shields.io/badge/version-1.0.1-E74C3C">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-1a1a1a">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-E74C3C">
+  <img alt="i18n" src="https://img.shields.io/badge/i18n-10%20locales-27AE60">
 </p>
+<img alt="Pomodoro Timer banner" src="/com.pomodoro.timer.ulanziPlugin/assets/icons/brand-og.png">
 
 ---
 
-## ✨ Features
+## ✨ What it does
 
-- **Live progress ring** — the ring drains as time runs out; minutes/seconds rendered as crisp **vector text** (works on any renderer).
-- **Full Pomodoro flow** — focus → short break → focus … → long break → **green ✓ celebration**. Runs automatically; press the key only to pause/resume.
-- **Progress dots** — show how many pomodoros are configured and how many you've completed.
-- **9 themes** — Classic, Minimal, Neon, Ocean, Forest, Sunset, Dracula, Coffee, Mono — plus a **custom color picker**.
-- **4 fonts** — Sans, Mono, Serif, Display (bundled OFL fonts, drawn as vector paths).
-- **Ring animations** — None, Pulse, Comet, Sweep (frame-driven, premium minimalist).
-- **Glossy text shimmer** — an "AI thinking" sweep across the timer, in a lighter shade of the active color.
-- **Last-7s blink** — the key flashes to warn you the time is almost up.
-- **Desktop notifications** — native toast on each phase end, with the plugin name + icon, localized.
-- **Live preview** in the settings panel — see your exact configuration animate before applying.
-- **Built-in tutorial** — explains the technique, color meanings and usage, in your language.
-- **10 languages** — EN, PT-BR, PT-PT, ES, DE, FR, JA, KO, ZH-CN, ZH-HK.
-- **Windows & macOS**.
+One key becomes a complete Pomodoro timer:
 
----
+- **Full Pomodoro flow** — focus → short break → every 4 pomodoros a long break — running automatically.
+- **Press to start / pause** — single click starts, pauses and resumes the countdown.
+- **Long press to reset** — **hold the key ~1.5 s to restart** the timer, no need to open the settings panel. (Falls back gracefully to press-only on older Ulanzi Studio builds.)
+- **Live countdown ring** — drains as time runs out; the centre shows the time left (mm:ss) in a real vector font.
+- **Progress dots** — how many pomodoros are set and how many you've completed.
+- **Per-phase colours** — focus, short break and long break each have their own colour; the last 7 seconds blink, and a green ✓ blinks when the cycle completes.
+- **9 themes** (Classic, Minimal, Neon, Ocean, Forest, Sunset, Dracula, Coffee, Mono) + custom color, **4 vector fonts** (Sans / Mono / Serif / Display), ring & background animations, optional text shimmer.
+- **Desktop notifications** (Windows + macOS) announce each phase change.
+- **Built-in tutorial** — a modern, fully-localized guide (the Pomodoro method, how to use the key, and every state).
 
-## 🎨 Color guide
-
-| Color | Phase | Meaning |
-|------|-------|---------|
-| 🔴 Red | **Focus** | Concentrated work time |
-| 🟢 Green | **Short break** | Quick rest between focuses |
-| 🔵 Blue | **Long break** | Longer rest after several pomodoros |
-| 🟢 Green ✓ | **Done** | Full cycle complete (blinks 5s) |
-| ⚪ Dimmed | **Paused** | Timer stopped |
-| ⚡ Blinking | **Alert** | Last 7 seconds |
-
-> Colors shown are the **Classic** theme — each theme has its own palette, and a custom color overrides them all.
+Everything runs **locally** — no accounts, no API keys, no telemetry.
 
 ---
 
-## 📦 Installation
+## 🎛️ Settings
 
-1. Copy the `com.pomodoro.timer.ulanziPlugin` folder into your Ulanzi plugins directory:
-   - **Windows:** `%AppData%\Ulanzi\UlanziDeck\Plugins\`
+| Option | Description |
+|--------|-------------|
+| **Focus** | Focus length in minutes (default 25). |
+| **Short break** | Short break length (default 5). |
+| **Long break** | Long break length (default 15). |
+| **Pomodoros before long break** | How many focus sessions before the long break (default 4). |
+| **Notify** | Desktop alert on each phase change. |
+| **Theme / Font** | Colour palette and typeface for the digits. |
+| **Animation** | Ring style (clean / glow / …) + background animation + optional text shimmer. |
+
+---
+
+## ⌨️ Controls
+
+| Gesture | Action |
+|---------|--------|
+| **Short press** | Start · Pause · Resume (and dismiss the completion screen). |
+| **Long press (~1.5 s)** | Reset the timer back to READY. |
+
+> The long press uses the Ulanzi `keydown` / `keyup` events (Plugin Protocol V2.1.2, Ulanzi Studio 3.0.11+). On older builds that don't emit them, the key keeps its original press-only behaviour — nothing breaks.
+
+---
+
+## 🍅 The Pomodoro method
+
+1. Pick one task.
+2. Focus fully for **25 minutes** (one pomodoro).
+3. Take a **5-minute** short break.
+4. Every **4 pomodoros**, take a longer **15–30 minute** break.
+5. Repeat — the long break lets your mind recover.
+
+---
+
+## 🌍 Languages
+
+English · Português (BR/PT) · Español · Deutsch · Français · 日本語 · 한국어 · 中文 (简体/繁體)
+
+UI and the built-in **tutorial page** auto-detect the Ulanzi/system language.
+
+---
+
+## 💾 Installation
+
+### From the Ulanzi Store
+Search for **Pomodoro Timer** in the UlanziDeck plugin store and install.
+
+### Manual / from source
+1. Clone or download this repository.
+2. Run `npm install` (installs `opentype.js` and `ws`).
+3. Copy the folder `com.pomodoro.timer.ulanziPlugin` into:
+   - **Windows:** `%AppData%\Roaming\Ulanzi\UlanziDeck\Plugins\`
    - **macOS:** `~/Library/Application Support/Ulanzi/UlanziDeck/Plugins/`
-2. Fully **quit** Ulanzi Studio from the system tray and relaunch.
-3. Drag **Pomodoro Timer** onto any key.
+4. Restart **UlanziDeck Studio**.
 
-> Cloning the repo? Run `npm install` inside the plugin folder to fetch `ws` + `opentype.js`.
+> Requires UlanziDeck software **2.1.0+**. Long-press reset needs **3.0.11+**.
 
-### 🍎 macOS notifications (optional)
+---
 
-Windows shows the toast with the plugin's name and icon out of the box. On macOS the
-notification banner's name/icon come from the app that posts it, so for a richer
-notification install **terminal-notifier** (MIT, open source):
+## 🛠️ Tech & compatibility
 
-```sh
-brew install terminal-notifier
+- **Cross-platform** — `os`/`path` aware, no hardcoded paths. Windows + macOS.
+- **No native binaries** — pure-JS dependencies (`opentype.js`, `ws`), fully portable.
+- **Lightweight** — the countdown uses a single 1 s tick; animated rings/backgrounds run a low-fps loop; **vector digits are cached** and **identical frames are never re-sent to the deck**, so a resting key barely touches the CPU.
+- **Vector digits** — fonts converted to SVG paths so the chosen font renders on every deck renderer, on Windows and macOS.
+- **One instance per action** — moving a key to another slot cleans up the old instance (no flicker or duplicate timers).
+
+---
+
+## 📦 Project structure
+
 ```
-
-The plugin auto-detects it and then shows the **per-phase icon** + **Glass** sound on
-each notification. If it isn't installed, the plugin falls back to `osascript`
-(notification still works — title + message — just with a generic app attribution).
-
-To get the **plugin name + a custom app icon** in the banner (full Windows parity), a
-signed/rebranded helper bundle is required — step-by-step in
-[`com.pomodoro.timer.ulanziPlugin/assets/mac/README.md`](com.pomodoro.timer.ulanziPlugin/assets/mac/README.md).
-
-> First time, macOS may ask to allow notifications — **System Settings → Notifications**.
-
----
-
-## ▶️ Usage
-
-- **Press the key** → start / pause / resume.
-- The flow continues automatically; it only pauses when you press the key.
-- Open the key's **settings panel** to configure:
-  - Focus / short break / long break durations
-  - Pomodoros before a long break
-  - Theme, font, ring animation, glossy text, custom color
-  - Desktop notifications
-  - **Reset Timer** and **Tutorial** buttons
-
----
-
-## ⚙️ Tech
-
-- Backend: Node.js service over WebSocket (`ws`).
-- Timer digits drawn as **vector paths** via `opentype.js` + bundled OFL fonts (Roboto / Roboto Mono / Roboto Slab / Orbitron) — so the font actually changes on the deck rasterizer.
-- Key images are generated **frame by frame** as base64 SVG.
-- **Windows** toasts use a registered AppUserModelID (Start Menu shortcut) so the notification shows the plugin's localized name + icon.
-- **macOS** uses `terminal-notifier` when available (per-phase icon), otherwise `osascript`.
-
----
-
-## 🌐 Languages
-
-English · Português (BR/PT) · Español · Deutsch · Français · 日本語 · 한국어 · 简体中文 · 繁體中文
-
----
-
-## 👤 Author
-
-**Jean Almeida**
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jeanc-almeida/)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/JEAN-ALMEIDA-CZO)
-[![Portfolio](https://img.shields.io/badge/Portfolio-E74C3C?logo=googlechrome&logoColor=white)](https://portifolio.athos.app.br/)
+com.pomodoro.timer.ulanziPlugin/
+├── manifest.json
+├── plugin/app.js               # backend: timer state + SVG renderer + notifications
+├── property-inspector/
+│   ├── inspector.html / .js     # settings panel
+│   └── tutorial.html            # modern multi-language guide
+├── libs/                        # Ulanzi SDK + css
+├── assets/                      # icons, fonts
+├── <locale>.json                # localization files
+├── LICENSE
+└── THIRD-PARTY-LICENSES.md
+```
 
 ---
 
 ## 📄 License
 
-MIT © Jean Almeida — see [`com.pomodoro.timer.ulanziPlugin/LICENSE`](com.pomodoro.timer.ulanziPlugin/LICENSE).
+Released under the **MIT License** — see [LICENSE](com.pomodoro.timer.ulanziPlugin/LICENSE).
+Bundled libraries and fonts are credited in [THIRD-PARTY-LICENSES.md](com.pomodoro.timer.ulanziPlugin/THIRD-PARTY-LICENSES.md).
 
-Bundled fonts and libraries are under their own licenses — see [`THIRD-PARTY-LICENSES.md`](com.pomodoro.timer.ulanziPlugin/THIRD-PARTY-LICENSES.md).
+---
+
+<p align="center">Made by <b>Jean Almeida</b> for the Ulanzi Deck community.</p>
